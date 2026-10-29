@@ -1141,8 +1141,9 @@ def eval_val_sliding(
     """Sliding window evaluation: each token scored with maximum context."""
     seq_len = eval_seq_len or args.train_seq_len
     total_tokens = val_tokens.numel() - 1
+    # Keep only windows that add targets beyond the preceding window.
     window_starts = [ws for ws in range(0, total_tokens, stride)
-                     if min(ws + seq_len, total_tokens) - ws >= 1]
+                     if ws == 0 or ws + seq_len - stride < total_tokens]
     total_windows = len(window_starts)
     my_s = (total_windows * rank) // world_size
     my_e = (total_windows * (rank + 1)) // world_size
@@ -1175,7 +1176,8 @@ def eval_val_sliding(
             ).reshape(bsz, seq_len)
             for i, ws in enumerate(batch_ws):
                 wlen = wlens[i]
-                s = 0 if ws == 0 else max(wlen - stride, 0)
+                # A partial tail must not move the scoring boundary backwards.
+                s = 0 if ws == 0 else max(seq_len - stride, 0)
                 scored_nll = nll[i, s:wlen].to(torch.float64)
                 loss_sum += scored_nll.sum()
                 token_count += float(wlen - s)
