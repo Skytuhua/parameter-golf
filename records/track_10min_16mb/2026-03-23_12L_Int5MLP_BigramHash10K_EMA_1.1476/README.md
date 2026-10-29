@@ -1,5 +1,13 @@
 # 12L Int5-MLP BigramHash10K EMA GPTQ-lite
 
+## Evaluation status
+
+The sliding-window evaluator now scores each validation target once, including
+partial tail windows. CPU regressions cover 3,360 cases and simulated rank
+partitions. The results and artifact sizes below describe the historical run
+with the earlier evaluator. A corrected model score and artifact verification
+remain pending because the original checkpoint is unavailable.
+
 ## Approach
 
 Built on top of the 11L EMA+GPTQ-lite SOTA (PR#414, 1.1233 BPB), with two key structural changes:
@@ -59,7 +67,7 @@ Built on top of the 11L EMA+GPTQ-lite SOTA (PR#414, 1.1233 BPB), with two key st
 | Embeddings | FP16 | zstd-22 |
 | Control tensors | FP32 | zstd-22 |
 
-## Results
+## Historical run results
 
 | Metric | Value |
 |--------|-------|
